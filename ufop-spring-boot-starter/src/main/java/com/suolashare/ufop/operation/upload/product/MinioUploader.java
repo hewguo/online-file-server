@@ -7,7 +7,7 @@ import com.suolashare.ufop.exception.operation.UploadException;
 import com.suolashare.ufop.operation.upload.Uploader;
 import com.suolashare.ufop.operation.upload.domain.UploadFile;
 import com.suolashare.ufop.operation.upload.domain.UploadFileResult;
-import com.suolashare.ufop.operation.upload.request.QiwenMultipartFile;
+import com.suolashare.ufop.operation.upload.request.OnlineMultipartFile;
 import com.suolashare.ufop.util.RedisUtil;
 import com.suolashare.ufop.util.UFOPUtils;
 import io.minio.*;
@@ -40,8 +40,8 @@ public class MinioUploader extends Uploader {
 
     @Override
     public void cancelUpload(UploadFile uploadFile) {
-        QiwenMultipartFile qiwenMultipartFile = new QiwenMultipartFile();
-        String fileUrl = qiwenMultipartFile.getFileUrl(uploadFile.getIdentifier());
+        OnlineMultipartFile onlineMultipartFile = new OnlineMultipartFile();
+        String fileUrl = onlineMultipartFile.getFileUrl(uploadFile.getIdentifier());
         String tempFileUrl = fileUrl + "_tmp";
         String confFileUrl = fileUrl.replace("." + UFOPUtils.getFileExtendName(fileUrl), ".conf");
         File tempFile = new File(tempFileUrl);
@@ -55,38 +55,38 @@ public class MinioUploader extends Uploader {
     }
 
     @Override
-    protected void doUploadFileChunk(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile) throws IOException {
+    protected void doUploadFileChunk(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile) throws IOException {
 
     }
 
     @Override
-    protected UploadFileResult organizationalResults(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile) {
+    protected UploadFileResult organizationalResults(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile) {
         return null;
     }
 
-    protected UploadFileResult doUploadFlow(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile) {
+    protected UploadFileResult doUploadFlow(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile) {
         UploadFileResult uploadFileResult = new UploadFileResult();
         try {
-            qiwenMultipartFile.getFileUrl(uploadFile.getIdentifier());
-            String fileUrl = UFOPUtils.getUploadFileUrl(uploadFile.getIdentifier(), qiwenMultipartFile.getExtendName());
+            onlineMultipartFile.getFileUrl(uploadFile.getIdentifier());
+            String fileUrl = UFOPUtils.getUploadFileUrl(uploadFile.getIdentifier(), onlineMultipartFile.getExtendName());
 
             File tempFile =  UFOPUtils.getTempFile(fileUrl);
             File processFile = UFOPUtils.getProcessFile(fileUrl);
 
-            byte[] fileData = qiwenMultipartFile.getUploadBytes();
+            byte[] fileData = onlineMultipartFile.getUploadBytes();
 
             writeByteDataToFile(fileData, tempFile, uploadFile);
 
             //判断是否完成文件的传输并进行校验与重命名
             boolean isComplete = checkUploadStatus(uploadFile, processFile);
             uploadFileResult.setFileUrl(fileUrl);
-            uploadFileResult.setFileName(qiwenMultipartFile.getFileName());
-            uploadFileResult.setExtendName(qiwenMultipartFile.getExtendName());
+            uploadFileResult.setFileName(onlineMultipartFile.getFileName());
+            uploadFileResult.setExtendName(onlineMultipartFile.getExtendName());
             uploadFileResult.setFileSize(uploadFile.getTotalSize());
             uploadFileResult.setStorageType(StorageTypeEnum.MINIO);
 
             if (uploadFile.getTotalChunks() == 1) {
-                uploadFileResult.setFileSize(qiwenMultipartFile.getSize());
+                uploadFileResult.setFileSize(onlineMultipartFile.getSize());
             }
 
             if (isComplete) {

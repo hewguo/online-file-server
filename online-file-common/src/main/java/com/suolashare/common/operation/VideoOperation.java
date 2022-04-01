@@ -1,6 +1,6 @@
 package com.suolashare.common.operation;
 
-import com.suolashare.common.exception.QiwenException;
+import com.suolashare.common.exception.OnlineException;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.Frame;
@@ -20,7 +20,7 @@ public class VideoOperation {
     public static InputStream thumbnailsImage(InputStream inputStream, File outFile, int width, int height) throws IOException {
 
         if (inputStream == null) {
-            throw new QiwenException(999999, "Get the video preview. The input stream is null.");
+            throw new OnlineException(999999, "Get the video preview. The input stream is null.");
         }
         try {
             FFmpegFrameGrabber ff = new FFmpegFrameGrabber(inputStream);

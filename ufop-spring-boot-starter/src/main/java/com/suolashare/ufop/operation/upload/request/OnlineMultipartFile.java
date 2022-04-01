@@ -7,14 +7,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
-public class QiwenMultipartFile {
+public class OnlineMultipartFile {
 
     MultipartFile multipartFile = null;
 
-    public QiwenMultipartFile() {
+    public OnlineMultipartFile() {
     }
 
-    public QiwenMultipartFile(MultipartFile multipartFile) {
+    public OnlineMultipartFile(MultipartFile multipartFile) {
         this.multipartFile = multipartFile;
     }
 

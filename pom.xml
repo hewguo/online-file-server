@@ -7,6 +7,7 @@
     <modules>
         <module>ufop-spring-boot-starter</module>
         <module>online-file-common</module>
+        <module>online-file</module>
     </modules>
 
     <parent>

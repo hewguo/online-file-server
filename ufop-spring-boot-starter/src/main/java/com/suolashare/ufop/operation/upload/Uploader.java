@@ -3,7 +3,7 @@ package com.suolashare.ufop.operation.upload;
 import com.suolashare.ufop.exception.operation.UploadException;
 import com.suolashare.ufop.operation.upload.domain.UploadFile;
 import com.suolashare.ufop.operation.upload.domain.UploadFileResult;
-import com.suolashare.ufop.operation.upload.request.QiwenMultipartFile;
+import com.suolashare.ufop.operation.upload.request.OnlineMultipartFile;
 import com.suolashare.ufop.util.RedisUtil;
 import com.suolashare.ufop.util.concurrent.locks.RedisLock;
 import lombok.extern.slf4j.Slf4j;
@@ -77,8 +77,8 @@ public abstract class Uploader {
             Iterator<String> iter = request.getFileNames();
             while (iter.hasNext()) {
                 MultipartFile multipartFile = request.getFile(iter.next());
-                QiwenMultipartFile qiwenMultipartFile = new QiwenMultipartFile(multipartFile);
-                UploadFileResult uploadFileResult = doUploadFlow(qiwenMultipartFile, uploadFile);
+                OnlineMultipartFile onlineMultipartFile = new OnlineMultipartFile(multipartFile);
+                UploadFileResult uploadFileResult = doUploadFlow(onlineMultipartFile, uploadFile);
                 uploadFileResultList.add(uploadFileResult);
 
             }
@@ -89,12 +89,12 @@ public abstract class Uploader {
         return uploadFileResultList;
     }
 
-    protected UploadFileResult doUploadFlow(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile) {
+    protected UploadFileResult doUploadFlow(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile) {
 
         UploadFileResult uploadFileResult;
         try {
-            rectifier(qiwenMultipartFile, uploadFile);
-            uploadFileResult = organizationalResults(qiwenMultipartFile, uploadFile);
+            rectifier(onlineMultipartFile, uploadFile);
+            uploadFileResult = organizationalResults(onlineMultipartFile, uploadFile);
         } catch (Exception e) {
             throw new UploadException(e);
         }
@@ -108,12 +108,12 @@ public abstract class Uploader {
      */
     public abstract void cancelUpload(UploadFile uploadFile);
 
-    protected abstract void doUploadFileChunk(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile)  throws IOException;
-    protected abstract UploadFileResult organizationalResults(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile);
+    protected abstract void doUploadFileChunk(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile)  throws IOException;
+    protected abstract UploadFileResult organizationalResults(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile);
 
-    private void rectifier(QiwenMultipartFile qiwenMultipartFile, UploadFile uploadFile) {
-        String key = "QiwenUploader:Identifier:" + uploadFile.getIdentifier() + ":lock";
-        String current_upload_chunk_number = "QiwenUploader:Identifier:" + uploadFile.getIdentifier() + ":current_upload_chunk_number";
+    private void rectifier(OnlineMultipartFile onlineMultipartFile, UploadFile uploadFile) {
+        String key = "OnlineUploader:Identifier:" + uploadFile.getIdentifier() + ":lock";
+        String current_upload_chunk_number = "OnlineUploader:Identifier:" + uploadFile.getIdentifier() + ":current_upload_chunk_number";
 
         redisLock.lock(key);
         try {
@@ -143,15 +143,15 @@ public abstract class Uploader {
                 }
             }
 
-            log.info("文件名{},正在上传第{}块, 共{}块>>>>>>>>>>", qiwenMultipartFile.getMultipartFile().getOriginalFilename(),uploadFile.getChunkNumber(), uploadFile.getTotalChunks());
+            log.info("文件名{},正在上传第{}块, 共{}块>>>>>>>>>>", onlineMultipartFile.getMultipartFile().getOriginalFilename(),uploadFile.getChunkNumber(), uploadFile.getTotalChunks());
             if (uploadFile.getChunkNumber() == currentUploadChunkNumber) {
-                doUploadFileChunk(qiwenMultipartFile, uploadFile);
-                log.info("文件名{},第{}块上传成功", qiwenMultipartFile.getMultipartFile().getOriginalFilename(), uploadFile.getChunkNumber());
-                this.redisUtil.getIncr("QiwenUploader:Identifier:" + uploadFile.getIdentifier() + ":current_upload_chunk_number");
+                doUploadFileChunk(onlineMultipartFile, uploadFile);
+                log.info("文件名{},第{}块上传成功", onlineMultipartFile.getMultipartFile().getOriginalFilename(), uploadFile.getChunkNumber());
+                this.redisUtil.getIncr("OnlineUploader:Identifier:" + uploadFile.getIdentifier() + ":current_upload_chunk_number");
             }
         } catch (Exception e) {
             log.error("第{}块上传失败，自动重试", uploadFile.getChunkNumber());
-            redisUtil.set("QiwenUploader:Identifier:" + uploadFile.getIdentifier() + ":current_upload_chunk_number", uploadFile.getChunkNumber(), 1000 * 60 * 60);
+            redisUtil.set("OnlineUploader:Identifier:" + uploadFile.getIdentifier() + ":current_upload_chunk_number", uploadFile.getChunkNumber(), 1000 * 60 * 60);
             throw new UploadException("更新远程文件出错", e);
         } finally {
 
@@ -194,7 +194,7 @@ public abstract class Uploader {
             //第三步 计算偏移量
             long position = (uploadFile.getChunkNumber() - 1) * uploadFile.getChunkSize();
             //第四步 获取分片数据
-//            byte[] fileData = qiwenMultipartFile.getUploadBytes();
+//            byte[] fileData = onlineMultipartFile.getUploadBytes();
             //第五步 写入数据
             fileChannel.position(position);
             fileChannel.write(ByteBuffer.wrap(fileData));
