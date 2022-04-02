@@ -11,6 +11,7 @@
         <module name="file-server" />
         <module name="ufop-spring-boot-starter" />
         <module name="online-file" />
+        <module name="online-file-web" />
       </profile>
     </annotationProcessing>
   </component>
@@ -20,6 +21,7 @@
       <module name="online-file" options="-parameters" />
       <module name="online-file-common" options="-parameters" />
       <module name="online-file-server" options="-parameters" />
+      <module name="online-file-web" options="-parameters" />
       <module name="ufop-spring-boot-starter" options="-parameters" />
     </option>
   </component>

@@ -1,0 +1,21 @@
+<assembly>
+    <id>online-file-web</id>
+    <formats>
+        <!-- 支持打包格式：zip,tar,tar.gz,tar.bz2,jar,dir,war -->
+        <format>tar</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <!-- 需要打包的文件集 -->
+    <fileSets>
+        <fileSet>
+            <directory>${basedir}/${name}/dist</directory>
+            <includes>
+                <include>**/*</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>
+

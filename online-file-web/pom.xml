@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>file-server</artifactId>
+        <groupId>com.suolashare</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>online-file-web</artifactId>
+    <version>${project.parent.version}</version>
+    <name>online-file-web</name>
+    <properties>
+        <skipDeploy>true</skipDeploy>
+    </properties>
+
+    <build>
+        <finalName>${name}</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <skip>${skipDeploy}</skip>
+                </configuration>
+                <executions>
+                    <!--执行npm install-->
+                    <execution>
+                        <id>exec-npm-install</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>install</argument>
+                            </arguments>
+                            <workingDirectory>${basedir}/${name}</workingDirectory>
+                        </configuration>
+                    </execution>
+
+                    <!--执行npm build-->
+                    <execution>
+                        <id>exec-npm-run-build</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>npm</executable>
+                            <arguments>
+                                <argument>run</argument>
+                                <arguments>build</arguments>
+                            </arguments>
+                            <workingDirectory>${basedir}/${name}</workingDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--将dist文件夹打包为tar包-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <skipAssembly>${skipDeploy}</skipAssembly>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <finalName>${name}</finalName>
+                            <descriptors>
+                                <descriptor>assembly.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+<!--    <profiles>-->
+<!--        <profile>-->
+<!--            <id>local</id>-->
+<!--            <properties>-->
+<!--                <package.environment>local</package.environment>-->
+<!--            </properties>-->
+<!--        </profile>-->
+<!--        <profile>-->
+<!--            <id>test</id>-->
+<!--            <properties>-->
+<!--                <package.environment>test</package.environment>-->
+<!--            </properties>-->
+<!--            <activation>-->
+<!--                <activeByDefault>true</activeByDefault>-->
+<!--            </activation>-->
+<!--        </profile>-->
+<!--        <profile>-->
+<!--            <id>uat</id>-->
+<!--            <properties>-->
+<!--                <package.environment>uat</package.environment>-->
+<!--            </properties>-->
+<!--        </profile>-->
+<!--        <profile>-->
+<!--            <id>prod</id>-->
+<!--            <properties>-->
+<!--                <package.environment>build:prod</package.environment>-->
+<!--            </properties>-->
+<!--        </profile>-->
+<!--    </profiles>-->
+
+
+</project>
